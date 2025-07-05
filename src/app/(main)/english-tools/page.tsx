@@ -24,17 +24,17 @@ export default function EnglishToolsPage() {
   const { mutate: createSentence } = api.englishTools.create.useMutation({
     onSuccess: () => {
       setSentence("");
-      utils.englishTools.list.invalidate();
+      void utils.englishTools.list.invalidate();
     },
   });
   const { mutate: deleteSentence } = api.englishTools.delete.useMutation({
     onSuccess: () => {
-      utils.englishTools.list.invalidate();
+      void utils.englishTools.list.invalidate();
     },
   });
   const { mutate: togglePin } = api.englishTools.togglePin.useMutation({
     onSuccess: () => {
-      utils.englishTools.list.invalidate();
+      void utils.englishTools.list.invalidate();
     },
   });
 
@@ -86,11 +86,39 @@ export default function EnglishToolsPage() {
                   className={sentence.pinned ? "bg-muted/50" : ""}
                 >
                   <TableCell>{sentence.id}</TableCell>
-                  <TableCell>{sentence.sentence}</TableCell>
-                  <TableCell>
-                    {sentence.isCorrect ? "✅ Correct" : "❌ Incorrect"}
+                  <TableCell className="max-w-[300px] break-words whitespace-pre-wrap">
+                    {sentence.sentence}
+                    <div className="mt-1">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs ${
+                          sentence.status === "INITIAL"
+                            ? "bg-gray-100 text-gray-700"
+                            : sentence.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : sentence.status === "COMPLETE"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {sentence.status.toLowerCase()}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-[200px] break-words whitespace-pre-wrap">
+                    {sentence.isCorrect ? (
+                      "✅ Correct"
+                    ) : (
+                      <div>
+                        <span>❌ Incorrect</span>
+                        {sentence.incorrectReason && (
+                          <p className="text-destructive mt-1 text-sm">
+                            {sentence.incorrectReason}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="max-w-[300px] break-words whitespace-pre-wrap">
                     <div className="space-y-2">
                       {sentence.b1Level.length > 0 && (
                         <div>
@@ -112,14 +140,16 @@ export default function EnglishToolsPage() {
                           </ul>
                         </div>
                       )}
-                      {sentence.a1Level.length > 0 && (
-                        <div>
-                          <span className="font-semibold">A1 level:</span>
-                          <ul className="list-disc pl-4">
-                            {sentence.a1Level.map((alt, i) => (
-                              <li key={i}>{alt}</li>
-                            ))}
-                          </ul>
+                      {sentence.c1Level.length > 0 && (
+                        <div className="mt-4">
+                          <h3 className="font-semibold text-gray-900">
+                            C1 Level
+                          </h3>
+                          {sentence.c1Level.map((alt, i) => (
+                            <p key={i} className="text-sm text-gray-600">
+                              {alt}
+                            </p>
+                          ))}
                         </div>
                       )}
                     </div>

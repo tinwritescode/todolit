@@ -1,6 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { executeItem } from "../../../app/api/worker/process-sentences/route";
+import { env } from "../../../env";
 import { redis } from "../../../lib/redis";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const englishToolsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -13,12 +15,16 @@ export const englishToolsRouter = createTRPCRouter({
         },
       });
 
-      // Push to queue for processing
-      await redis.lpush("sentences-queue", {
-        id: sentence.id,
-        sentence: sentence.sentence,
-        userId: ctx.session.user.id,
-      });
+      // if it is local, then call POST /api/worker/process-sentences
+      if (env.NODE_ENV === "development") {
+        await executeItem({ id: sentence.id, sentence: sentence.sentence });
+      } else {
+        // Push to queue for processing
+        await redis.lpush<{ id: number; sentence: string }>("sentences-queue", {
+          id: sentence.id,
+          sentence: sentence.sentence,
+        });
+      }
 
       return sentence;
     }),

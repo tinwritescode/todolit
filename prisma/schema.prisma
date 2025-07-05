@@ -130,20 +130,21 @@ enum EnglishToolsStatus {
 }
 
 model EnglishTools {
-    id        Int                @id @default(autoincrement())
-    sentence  String
-    createdAt DateTime           @default(now())
-    updatedAt DateTime           @updatedAt
-    author    User               @relation(fields: [authorId], references: [id])
-    authorId  String
-    isCorrect Boolean            @default(false)
-    b1Level   String[]
-    b2Level   String[]
-    a1Level   String[]
-    pinned    Boolean            @default(false)
-    pinnedAt  DateTime?
-    feedback  String?
-    status    EnglishToolsStatus @default(INITIAL)
+    id              Int                @id @default(autoincrement())
+    sentence        String
+    createdAt       DateTime           @default(now())
+    updatedAt       DateTime           @updatedAt
+    author          User               @relation(fields: [authorId], references: [id])
+    authorId        String
+    isCorrect       Boolean            @default(false)
+    incorrectReason String?
+    b1Level         String[]
+    b2Level         String[]
+    c1Level         String[]           @default([])
+    pinned          Boolean            @default(false)
+    pinnedAt        DateTime?
+    feedback        String?
+    status          EnglishToolsStatus @default(INITIAL)
 
     @@index([authorId])
 }
