@@ -65,6 +65,7 @@ model User {
     posts          Post[]
     projects       Project[]
     WeeklyOverview WeeklyOverview[]
+    EnglishTools   EnglishTools[]
 }
 
 model VerificationToken {
@@ -119,4 +120,30 @@ model WeeklyOverview {
 
     @@unique([week, year])
     @@index([userId])
+}
+
+enum EnglishToolsStatus {
+    INITIAL
+    PENDING
+    COMPLETE
+    ERROR
+}
+
+model EnglishTools {
+    id        Int                @id @default(autoincrement())
+    sentence  String
+    createdAt DateTime           @default(now())
+    updatedAt DateTime           @updatedAt
+    author    User               @relation(fields: [authorId], references: [id])
+    authorId  String
+    isCorrect Boolean            @default(false)
+    b1Level   String[]
+    b2Level   String[]
+    a1Level   String[]
+    pinned    Boolean            @default(false)
+    pinnedAt  DateTime?
+    feedback  String?
+    status    EnglishToolsStatus @default(INITIAL)
+
+    @@index([authorId])
 }
