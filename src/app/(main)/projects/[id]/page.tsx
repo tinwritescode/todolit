@@ -32,7 +32,8 @@ function ErrorState() {
         Project not found
       </h3>
       <p className="mb-6 text-gray-500">
-        This project might have been deleted or you don't have access to it.
+        This project might have been deleted or you don&apos;t have access to
+        it.
       </p>
       <Button asChild>
         <Link href="/projects">
@@ -60,7 +61,7 @@ function SingleProjectContent() {
 
   const createTodo = api.todo.create.useMutation({
     onSuccess: () => {
-      utils.project.getById.invalidate(projectId);
+      void utils.project.getById.invalidate(projectId);
       setNewTodoTitle("");
     },
   });
@@ -87,7 +88,7 @@ function SingleProjectContent() {
       }
     },
     onSettled: () => {
-      utils.project.getById.invalidate(projectId);
+      void utils.project.getById.invalidate(projectId);
     },
   });
 
@@ -111,7 +112,7 @@ function SingleProjectContent() {
       }
     },
     onSettled: () => {
-      utils.project.getById.invalidate(projectId);
+      void utils.project.getById.invalidate(projectId);
     },
   });
 
@@ -137,7 +138,7 @@ function SingleProjectContent() {
       }
     },
     onSettled: () => {
-      utils.project.getById.invalidate(projectId);
+      void utils.project.getById.invalidate(projectId);
       setEditingTodoId(null);
     },
   });

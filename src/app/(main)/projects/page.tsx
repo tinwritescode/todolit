@@ -19,8 +19,6 @@ import { FolderOpen, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const MotionCard = motion(Card);
-
 interface Todo {
   completed: boolean;
 }
@@ -108,7 +106,7 @@ function ProjectsPageContent() {
 
   const createProject = api.project.create.useMutation({
     onSuccess: () => {
-      utils.project.getAll.invalidate();
+      void utils.project.getAll.invalidate();
       setNewProjectName("");
       setNewProjectDescription("");
     },
@@ -151,7 +149,7 @@ function ProjectsPageContent() {
     },
     onSettled: () => {
       // Sync with server once mutation has settled
-      utils.project.getAll.invalidate();
+      void utils.project.getAll.invalidate();
     },
   });
 
@@ -167,7 +165,7 @@ function ProjectsPageContent() {
       "bg-indigo-500",
     ];
     const randomIndex = Math.floor(Math.random() * colors.length);
-    const randomColor = colors[randomIndex] as string;
+    const randomColor = colors[randomIndex]!;
 
     createProject.mutate({
       title: newProjectName.trim(),

@@ -42,7 +42,6 @@ import { api } from "@/trpc/react";
 import { type RouterOutputs } from "@/trpc/shared";
 
 type Todo = RouterOutputs["todo"]["getAll"][0];
-type Project = RouterOutputs["project"]["getAll"][0];
 
 export default function TodoPage() {
   const [newTodoName, setNewTodoName] = useState("");
@@ -73,19 +72,19 @@ export default function TodoPage() {
 
   const { mutate: createTodo } = api.todo.create.useMutation({
     onSuccess: () => {
-      utils.todo.getAll.invalidate();
+      void utils.todo.getAll.invalidate();
     },
   });
 
   const { mutate: toggleTodo } = api.todo.toggle.useMutation({
     onSuccess: () => {
-      utils.todo.getAll.invalidate();
+      void utils.todo.getAll.invalidate();
     },
   });
 
   const { mutate: deleteTodoMutation } = api.todo.delete.useMutation({
     onSuccess: () => {
-      utils.todo.getAll.invalidate();
+      void utils.todo.getAll.invalidate();
     },
   });
 
@@ -135,9 +134,6 @@ export default function TodoPage() {
     if (isTomorrow(dueDate)) return "Tomorrow";
     return format(dueDate, "MMM d");
   };
-
-  const getProjectById = (id: number | null) =>
-    id ? projects.find((p) => p.id === id) || null : null;
 
   const stats = {
     total: todos.length,
