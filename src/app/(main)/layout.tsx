@@ -17,7 +17,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckSquare, FolderOpen, LogIn, LogOut, User } from "lucide-react";
+import {
+  Brain,
+  CheckSquare,
+  FolderOpen,
+  LogIn,
+  LogOut,
+  User,
+} from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 interface MainTemplateLayoutProps {
@@ -88,6 +95,17 @@ export default function MainTemplateLayout({
                       >
                         <User />
                         <span>Profile</span>
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Link href="/english-tools" className="w-full">
+                      <SidebarMenuButton
+                        tooltip="English Tools"
+                        isActive={pathname === "/english-tools"}
+                      >
+                        <Brain />
+                        <span>English Tools</span>
                       </SidebarMenuButton>
                     </Link>
                   </SidebarMenuItem>

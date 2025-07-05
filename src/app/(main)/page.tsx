@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -10,6 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -17,36 +19,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { api } from "@/trpc/react";
+import { type RouterOutputs } from "@/trpc/shared";
 import {
-  CheckSquare,
-  TrendingUp,
-  Plus,
-  Trash2,
-  Clock,
-  Target,
-  Award,
-  AlertCircle,
-} from "lucide-react";
-import {
-  format,
-  endOfWeek,
-  endOfDay,
   addDays,
+  endOfDay,
+  endOfWeek,
+  format,
   isToday,
   isTomorrow,
 } from "date-fns";
-import { api } from "@/trpc/react";
-import { type RouterOutputs } from "@/trpc/shared";
+import {
+  AlertCircle,
+  Award,
+  CheckSquare,
+  Clock,
+  Plus,
+  Target,
+  Trash2,
+  TrendingUp,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { AuthGuard } from "../../components/auth/AuthGuard";
 
 type Todo = RouterOutputs["todo"]["getAll"][0];
 
-export default function TodoPage() {
+function TodoPageContent() {
   const [newTodoName, setNewTodoName] = useState("");
   const [newTodoDue, setNewTodoDue] = useState("today");
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   const utils = api.useUtils();
   const { data: todos = [] } = api.todo.getAll.useQuery();
@@ -304,13 +308,30 @@ export default function TodoPage() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Active Tasks</CardTitle>
-              <CardDescription>
-                {getActiveTodos().length} tasks remaining
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Active Tasks</CardTitle>
+                  <CardDescription>
+                    {getActiveTodos().length} tasks remaining
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowCompleted(!showCompleted)}
+                  className="hover:bg-gray-100"
+                  title={showCompleted ? "Hide Completed" : "Show Completed"}
+                >
+                  {showCompleted ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              {getActiveTodos().length === 0 ? (
+              {getActiveTodos().length === 0 && !showCompleted ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <CheckSquare className="mb-4 h-12 w-12 text-gray-300" />
                   <h3 className="mb-2 text-lg font-medium text-gray-900">
@@ -322,7 +343,7 @@ export default function TodoPage() {
                 </div>
               ) : (
                 <div className="max-h-96 space-y-3 overflow-y-auto">
-                  {getActiveTodos().map((todo) => (
+                  {(showCompleted ? todos : getActiveTodos()).map((todo) => (
                     <div
                       key={todo.id}
                       className={`flex items-center gap-3 rounded-lg border p-4 transition-colors ${
@@ -339,7 +360,9 @@ export default function TodoPage() {
                         className="mt-0.5"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-gray-900">
+                        <p
+                          className={`truncate font-medium text-gray-900 ${todo.completed ? "text-gray-500 line-through" : ""}`}
+                        >
                           {todo.title}
                         </p>
                         <div className="mt-1 flex items-center gap-2">
@@ -383,5 +406,13 @@ export default function TodoPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TodoPage() {
+  return (
+    <AuthGuard>
+      <TodoPageContent />
+    </AuthGuard>
   );
 }

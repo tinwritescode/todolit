@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { BarChart3, Settings, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AuthGuard } from "../../../components/auth/AuthGuard";
 
 interface Todo {
   id: string;
@@ -24,7 +25,7 @@ interface Project {
   id: string;
 }
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -213,5 +214,13 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <AuthGuard>
+      <ProfilePageContent />
+    </AuthGuard>
   );
 }

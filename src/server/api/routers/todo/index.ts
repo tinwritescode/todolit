@@ -12,7 +12,11 @@ export const todoRouter = createTRPCRouter({
       include: {
         project: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        { completed: "asc" },
+        { dueDate: "asc" },
+        { createdAt: "desc" },
+      ],
     });
   }),
 
