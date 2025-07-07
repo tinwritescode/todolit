@@ -15,16 +15,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Call the worker endpoint
-    const response = await fetch(
-      new URL("/api/worker/process-sentences", request.url),
-      {
-        method: "POST",
-      },
-    );
+    // TODO: Call the worker endpoint
 
-    const result = await response.json();
-    return NextResponse.json(result);
+    return NextResponse.json({ status: "success" });
   } catch (error: unknown) {
     console.error("Error triggering worker:", error);
     return NextResponse.json(

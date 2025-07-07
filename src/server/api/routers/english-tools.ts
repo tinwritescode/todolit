@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { executeItem } from "@/app/api/worker/process-sentences/executeItem";
 import { env } from "../../../env";
-import { redis } from "../../../lib/redis";
+import { qstash } from "../../../lib/qstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const englishToolsRouter = createTRPCRouter({
@@ -19,10 +19,15 @@ export const englishToolsRouter = createTRPCRouter({
       if (env.NODE_ENV === "development") {
         await executeItem({ id: sentence.id, sentence: sentence.sentence });
       } else {
-        // Push to queue for processing
-        await redis.lpush<{ id: number; sentence: string }>("sentences-queue", {
-          id: sentence.id,
-          sentence: sentence.sentence,
+        await qstash.publish({
+          url: new URL(
+            "/api/worker/process-sentences",
+            env.NEXT_PUBLIC_APP_URL,
+          ).toString(),
+          body: JSON.stringify({
+            id: sentence.id,
+            sentence: sentence.sentence,
+          }),
         });
       }
 
