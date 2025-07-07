@@ -15,20 +15,24 @@ export const englishToolsRouter = createTRPCRouter({
         },
       });
 
-      // if it is local, then call POST /api/worker/process-sentences
       if (env.NODE_ENV === "development") {
         await executeItem({ id: sentence.id, sentence: sentence.sentence });
       } else {
-        await qstash.publish({
-          url: new URL(
-            "/api/worker/process-sentences",
-            env.NEXT_PUBLIC_APP_URL,
-          ).toString(),
-          body: JSON.stringify({
-            id: sentence.id,
-            sentence: sentence.sentence,
-          }),
-        });
+        await qstash
+          .queue({
+            queueName: "Default",
+          })
+          .enqueue({
+            url: new URL(
+              "/api/worker/process-sentences",
+              env.NEXT_PUBLIC_APP_URL,
+            ).toString(),
+            method: "POST",
+            body: JSON.stringify({
+              id: sentence.id,
+              sentence: sentence.sentence,
+            }),
+          });
       }
 
       return sentence;
