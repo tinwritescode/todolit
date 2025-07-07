@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { executeItem } from "../../../app/api/worker/process-sentences/route";
+import { executeItem } from "@/app/api/worker/process-sentences/executeItem";
 import { env } from "../../../env";
 import { redis } from "../../../lib/redis";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
