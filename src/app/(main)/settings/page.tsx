@@ -30,7 +30,7 @@ import {
 import { useTodoStore } from "@/store/todo-store";
 import { HydrationWrapper } from "@/components/hydration-wrapper";
 import { api } from "@/trpc/react";
-import { UploadButton } from "@/lib/uploadthing";
+// import { UploadButton } from "@/lib/uploadthing";
 import { genUploader } from "uploadthing/client";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
 import { RotateCcw } from "lucide-react";
@@ -158,41 +158,6 @@ export default function SettingsPage() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
-
-  const handleUploadComplete = async (res: any) => {
-    const uploadedFile = res?.[0];
-    if (uploadedFile) {
-      const backupData = {
-        name: `Todo Backup - ${new Date().toLocaleDateString()}`,
-        description: `Backup of ${todos.length} todos (${todos.filter((t) => t.completed).length} completed)`,
-        fileName: uploadedFile.name,
-        fileUrl: uploadedFile.url,
-        fileKey: uploadedFile.key,
-        fileSize: uploadedFile.size,
-        mimeType: uploadedFile.type ?? "application/json",
-        version: "1.0",
-        category: "todo-backup",
-      };
-
-      try {
-        await createBackupMutation.mutateAsync(backupData);
-        setImportStatus({
-          type: "success",
-          message: "Backup file uploaded and created successfully!",
-        });
-      } catch (error) {
-        setImportStatus({
-          type: "error",
-          message: `Failed to create backup: ${error instanceof Error ? error.message : "Unknown error"}`,
-        });
-      }
-
-      // Clear status after 3 seconds
-      void setTimeout(() => {
-        setImportStatus({ type: null, message: "" });
-      }, 3000);
-    }
   };
 
   const handleCreateBackup = async () => {
@@ -700,8 +665,9 @@ export default function SettingsPage() {
                     <span className="text-muted-foreground">Completed:</span>
                     <p className="font-medium">
                       {
-                        backupPreview.todos.filter((t: any) => t.completed)
-                          .length
+                        backupPreview.todos.filter((t: any) =>
+                          Boolean(t.completed),
+                        ).length
                       }
                     </p>
                   </div>

@@ -1,43 +1,59 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Todo {
-  id: number
-  text: string
-  completed: boolean
-  description?: string
-  deadline?: string
-  repeatDaily?: boolean
+  id: number;
+  text: string;
+  completed: boolean;
+  description?: string;
+  deadline?: string;
+  repeatDaily?: boolean;
 }
 
 interface EditTodoDialogProps {
-  todo: Todo | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (id: number, updates: Partial<Pick<Todo, "text" | "description" | "deadline" | "repeatDaily">>) => void
+  todo: Todo | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (
+    id: number,
+    updates: Partial<
+      Pick<Todo, "text" | "description" | "deadline" | "repeatDaily">
+    >,
+  ) => void;
 }
 
-export function EditTodoDialog({ todo, open, onOpenChange, onSave }: EditTodoDialogProps) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [deadline, setDeadline] = useState("")
-  const [repeatDaily, setRepeatDaily] = useState(false)
+export function EditTodoDialog({
+  todo,
+  open,
+  onOpenChange,
+  onSave,
+}: EditTodoDialogProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [repeatDaily, setRepeatDaily] = useState(false);
 
   useEffect(() => {
     if (todo) {
-      setName(todo.text)
-      setDescription(todo.description || "")
-      setDeadline(todo.deadline || "")
-      setRepeatDaily(todo.repeatDaily || false)
+      setName(todo.text);
+      setDescription(todo.description ?? "");
+      setDeadline(todo.deadline ?? "");
+      setRepeatDaily(todo.repeatDaily ?? false);
     }
-  }, [todo])
+  }, [todo]);
 
   const handleSave = () => {
     if (todo && name.trim()) {
@@ -46,20 +62,20 @@ export function EditTodoDialog({ todo, open, onOpenChange, onSave }: EditTodoDia
         description: description.trim() || undefined,
         deadline: deadline || undefined,
         repeatDaily,
-      })
-      onOpenChange(false)
+      });
+      onOpenChange(false);
     }
-  }
+  };
 
   const handleCancel = () => {
     if (todo) {
-      setName(todo.text)
-      setDescription(todo.description || "")
-      setDeadline(todo.deadline || "")
-      setRepeatDaily(todo.repeatDaily || false)
+      setName(todo.text);
+      setDescription(todo.description ?? "");
+      setDeadline(todo.deadline ?? "");
+      setRepeatDaily(todo.repeatDaily ?? false);
     }
-    onOpenChange(false)
-  }
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,7 +86,12 @@ export function EditTodoDialog({ todo, open, onOpenChange, onSave }: EditTodoDia
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Task Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter task name..." />
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter task name..."
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
@@ -84,7 +105,12 @@ export function EditTodoDialog({ todo, open, onOpenChange, onSave }: EditTodoDia
           </div>
           <div className="grid gap-2">
             <Label htmlFor="deadline">Deadline</Label>
-            <Input id="deadline" type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+            <Input
+              id="deadline"
+              type="datetime-local"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+            />
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -105,5 +131,5 @@ export function EditTodoDialog({ todo, open, onOpenChange, onSave }: EditTodoDia
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

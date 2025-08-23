@@ -182,7 +182,6 @@ export default function TodoApp() {
   };
 
   const handleTodoTouchStart = (e: React.TouchEvent, todoId: number) => {
-    const touch = e.touches[0];
     handleTouchStart(e, todoId);
   };
 
