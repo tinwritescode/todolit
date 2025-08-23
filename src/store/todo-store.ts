@@ -14,6 +14,8 @@ interface Todo {
 
 interface TodoStore {
   todos: Todo[];
+  completeMode: boolean;
+  setCompleteMode: (mode: boolean) => void;
   addTodo: (text: string) => void;
   toggleTodo: (id: number) => void;
   deleteTodo: (id: number) => void;
@@ -33,6 +35,8 @@ export const useTodoStore = create<TodoStore>()(
   persist(
     (set, get) => ({
       todos: [],
+      completeMode: false,
+      setCompleteMode: (mode: boolean) => set({ completeMode: mode }),
       addTodo: (text: string) => {
         if (text.trim() !== "") {
           set((state) => ({

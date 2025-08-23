@@ -4,15 +4,7 @@ import { MainLayout } from "@/components/MainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatName } from "@/lib/utils";
-import {
-  Brain,
-  ChartBar,
-  CheckSquare,
-  FolderOpen,
-  LogIn,
-  LogOut,
-  User,
-} from "lucide-react";
+import { Brain, CheckSquare, LogIn, LogOut, Settings } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -52,14 +44,14 @@ export default function MainTemplateLayout({
           <span>Tasks</span>
         </Button>
       </Link>
-      <Link href="/profile">
+      <Link href="/settings">
         <Button
-          variant={pathname === "/profile" ? "default" : "ghost"}
+          variant={pathname === "/settings" ? "default" : "ghost"}
           size="sm"
           className="flex items-center gap-2"
         >
-          <User className="h-4 w-4" />
-          <span>Profile</span>
+          <Settings className="h-4 w-4" />
+          <span>Settings</span>
         </Button>
       </Link>
       <Link href="/english-tools">

@@ -1,32 +1,43 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
-  Trash2,
-  Plus,
+  Calendar,
+  Check,
   Edit3,
   FileEdit,
-  Calendar,
+  Mic,
+  Plus,
   Repeat,
-  Check,
+  Settings,
+  Trash2,
 } from "lucide-react";
 
-import { useTodos } from "@/hooks/use-todos";
-import { useContextMenu } from "@/hooks/use-context-menu";
-import { useLongPress } from "@/hooks/use-long-press";
-import { useEditTodo } from "@/hooks/use-edit-todo";
 import { EditTodoDialog } from "@/components/edit-todo-dialog";
 import { HydrationWrapper } from "@/components/hydration-wrapper";
+import { useContextMenu } from "@/hooks/use-context-menu";
+import { useEditTodo } from "@/hooks/use-edit-todo";
+import { useLongPress } from "@/hooks/use-long-press";
+import { useTodos } from "@/hooks/use-todos";
+import { useTodoStore } from "@/store/todo-store";
+import { api } from "@/trpc/react";
 
 export default function TodoApp() {
   const [inputValue, setInputValue] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<any>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null,
+  );
+
+  const transcribeMutation = api.speechToText.transcribe.useMutation();
 
   const {
     todos,
@@ -39,6 +50,8 @@ export default function TodoApp() {
     completedCount,
     totalCount,
   } = useTodos();
+
+  const { completeMode, setCompleteMode } = useTodoStore();
   const { contextMenu, showContextMenu, hideContextMenu, handleRightClick } =
     useContextMenu();
   const {
@@ -67,6 +80,19 @@ export default function TodoApp() {
     return () => clearInterval(interval);
   }, [resetDailyTodos]);
 
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Toggle complete mode with 'M' key
+      if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        setCompleteMode(!completeMode);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [completeMode, setCompleteMode]);
+
   const handleAddTodo = () => {
     addTodo(inputValue);
     setInputValue("");
@@ -75,6 +101,83 @@ export default function TodoApp() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleAddTodo();
+    }
+  };
+
+  const handleSpeechToText = async () => {
+    try {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Create MediaRecorder
+      const recorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        setIsListening(false);
+
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop());
+
+        if (chunks.length > 0) {
+          const audioBlob = new Blob(chunks, { type: "audio/webm" });
+
+          // Convert to base64
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64Audio = (reader.result as string).split(",")[1] ?? "";
+
+            try {
+              const result = await transcribeMutation.mutateAsync({
+                audioData: base64Audio,
+                mimeType: "audio/webm",
+              });
+
+              if (result.success && result.text) {
+                setInputValue(result.text);
+              } else {
+                alert(`Transcription failed: ${result.error}`);
+              }
+            } catch (error) {
+              console.error("Transcription error:", error);
+              alert("Failed to transcribe audio. Please try again.");
+            }
+          };
+          reader.readAsDataURL(audioBlob);
+        }
+      };
+
+      recorder.onerror = (event) => {
+        console.error("MediaRecorder error:", event);
+        setIsListening(false);
+        stream.getTracks().forEach((track) => track.stop());
+        alert("Audio recording failed. Please try again.");
+      };
+
+      // Start recording
+      recorder.start();
+      setIsListening(true);
+      setMediaRecorder(recorder);
+    } catch (error) {
+      console.error("Microphone access error:", error);
+      alert(
+        "Microphone access denied. Please allow microphone access and try again.",
+      );
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isListening) {
+      mediaRecorder.stop();
     }
   };
 
@@ -92,22 +195,71 @@ export default function TodoApp() {
     }
   };
 
+  const handleTodoClick = (todoId: number) => {
+    if (completeMode) {
+      toggleTodo(todoId);
+    }
+  };
+
   return (
     <HydrationWrapper>
       <div className="bg-background min-h-screen p-4" onClick={hideContextMenu}>
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto max-w-2xl">
           <Card>
             <CardHeader>
-              <CardTitle className="text-center text-2xl font-bold">
-                Simple To-Do List
-              </CardTitle>
+              <div className="mb-2 flex items-center justify-between">
+                <CardTitle className="text-2xl font-bold">
+                  Simple To-Do List
+                </CardTitle>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">
+                      Normal
+                    </span>
+                    <button
+                      onClick={() => {
+                        setCompleteMode(!completeMode);
+                      }}
+                      className={`focus:ring-ring relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                        completeMode ? "bg-primary" : "bg-muted"
+                      }`}
+                    >
+                      <span
+                        className={`bg-background inline-block h-4 w-4 transform rounded-full transition-transform ${
+                          completeMode ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                    <span className="text-muted-foreground text-sm">
+                      Complete
+                    </span>
+                    <span className="text-muted-foreground/60 text-xs">
+                      (M)
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => (window.location.href = "/settings")}
+                    className="flex items-center gap-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Settings
+                  </Button>
+                </div>
+              </div>
               {totalCount > 0 && (
                 <p className="text-muted-foreground text-center text-sm">
                   {completedCount} of {totalCount} completed
                 </p>
               )}
+              {completeMode && (
+                <p className="text-center text-sm font-medium text-blue-600">
+                  Click on tasks to mark as complete/incomplete
+                </p>
+              )}
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 p-6">
               {/* Add new todo */}
               <div className="flex gap-2">
                 <Input
@@ -117,6 +269,14 @@ export default function TodoApp() {
                   onKeyPress={handleKeyPress}
                   className="flex-1"
                 />
+                <Button
+                  onClick={isListening ? stopRecording : handleSpeechToText}
+                  size="icon"
+                  variant={isListening ? "destructive" : "outline"}
+                  disabled={transcribeMutation.isPending}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
                 <Button onClick={handleAddTodo} size="icon">
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -132,7 +292,10 @@ export default function TodoApp() {
                   todos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="hover:bg-accent/50 flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+                      className={`hover:bg-accent/50 flex items-center gap-3 rounded-lg border p-3 transition-colors ${
+                        completeMode ? "cursor-pointer" : ""
+                      }`}
+                      onClick={() => handleTodoClick(todo.id)}
                       onContextMenu={(e) => handleRightClick(e, todo.id)}
                       onTouchStart={(e) => handleTodoTouchStart(e, todo.id)}
                       onTouchMove={handleTouchMove}
@@ -141,8 +304,11 @@ export default function TodoApp() {
                       <Checkbox
                         checked={todo.completed}
                         onCheckedChange={() => {
-                          toggleTodo(todo.id);
+                          if (!completeMode) {
+                            toggleTodo(todo.id);
+                          }
                         }}
+                        className={completeMode ? "pointer-events-none" : ""}
                       />
                       <div className="flex-1">
                         {editingId === todo.id ? (

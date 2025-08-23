@@ -18,6 +18,7 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     ANTHROPIC_API_KEY: z.string(),
+    OPENAI_API_KEY: z.string(),
     UPSTASH_REDIS_REST_URL: z.string().url(),
     UPSTASH_REDIS_REST_TOKEN: z.string(),
     CRON_SECRET: z.string(),
@@ -29,6 +30,7 @@ export const env = createEnv({
     EXPLORER_API_URL: z.string().url().optional(),
     EXPLORER_API_KEY: z.string().optional(),
     SOLC_VERSION: z.string().optional(),
+    UPLOADTHING_TOKEN: z.string(),
   },
 
   /**
@@ -51,6 +53,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     CRON_SECRET: process.env.CRON_SECRET,
@@ -62,7 +65,7 @@ export const env = createEnv({
     EXPLORER_API_URL: process.env.EXPLORER_API_URL,
     EXPLORER_API_KEY: process.env.EXPLORER_API_KEY,
     SOLC_VERSION: process.env.SOLC_VERSION,
-
+    UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   /**

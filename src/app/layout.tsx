@@ -6,6 +6,9 @@ import { Montserrat } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import { SessionProvider } from "next-auth/react";
 import { Providers } from "./_providers";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "./api/uploadthing/core";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -24,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable}`}>
       <body className="min-h-screen">
+        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <Providers>
           <SessionProvider>
             <TRPCReactProvider>{children}</TRPCReactProvider>
