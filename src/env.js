@@ -26,6 +26,9 @@ export const env = createEnv({
     QSTASH_TOKEN: z.string(),
     QSTASH_CURRENT_SIGNING_KEY: z.string(),
     QSTASH_NEXT_SIGNING_KEY: z.string(),
+    EXPLORER_API_URL: z.string().url().optional(),
+    EXPLORER_API_KEY: z.string().optional(),
+    SOLC_VERSION: z.string().optional(),
   },
 
   /**
@@ -56,6 +59,9 @@ export const env = createEnv({
     QSTASH_TOKEN: process.env.QSTASH_TOKEN,
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
+    EXPLORER_API_URL: process.env.EXPLORER_API_URL,
+    EXPLORER_API_KEY: process.env.EXPLORER_API_KEY,
+    SOLC_VERSION: process.env.SOLC_VERSION,
 
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },

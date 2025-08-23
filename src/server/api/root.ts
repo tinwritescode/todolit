@@ -1,8 +1,11 @@
+import { binanceRouter } from "@/server/api/routers/binance";
+import { tokenRouter } from "@/server/api/routers/token";
 import { postRouter } from "@/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
-import { todoRouter } from "./routers/todo";
-import { projectRouter } from "./routers/project";
 import { englishToolsRouter } from "./routers/english-tools";
+import { projectRouter } from "./routers/project";
+import { todoRouter } from "./routers/todo";
+import { promptRouter } from "./routers/prompt";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +17,9 @@ export const appRouter = createTRPCRouter({
   todo: todoRouter,
   project: projectRouter,
   englishTools: englishToolsRouter,
+  binance: binanceRouter,
+  token: tokenRouter,
+  prompt: promptRouter,
 });
 
 // export type definition of API

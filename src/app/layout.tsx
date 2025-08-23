@@ -5,6 +5,7 @@ import { Montserrat } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import { SessionProvider } from "next-auth/react";
+import { Providers } from "./_providers";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable}`}>
       <body className="min-h-screen">
-        <SessionProvider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </SessionProvider>
+        <Providers>
+          <SessionProvider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

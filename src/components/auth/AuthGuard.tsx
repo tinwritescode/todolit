@@ -1,4 +1,4 @@
-import { useSession, signIn } from "next-auth/react";
+import { signInModal } from "@/app/(main)/signInModal";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,6 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LogIn } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useSnapshot } from "valtio";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -15,6 +17,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { data: session, status } = useSession();
+  const setIsSignInOpen = useSnapshot(signInModal).setIsOpen;
 
   if (status === "loading") {
     return (
@@ -38,9 +41,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => signIn()} className="w-full">
-              Sign In
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => setIsSignInOpen(true)} className="w-full">
+                Sign In
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -12,12 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Pin, PinOff } from "lucide-react";
+import { Trash2, Pin, PinOff, RefreshCw } from "lucide-react";
 import { api } from "@/trpc/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function EnglishToolsPage() {
   const [sentence, setSentence] = useState("");
+  const [countdown, setCountdown] = useState(10);
   const utils = api.useUtils();
 
   const { data: sentences } = api.englishTools.list.useQuery();
@@ -38,6 +39,19 @@ export default function EnglishToolsPage() {
     },
   });
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          void utils.englishTools.list.invalidate();
+          return 10;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [utils]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sentence.trim()) return;
@@ -48,7 +62,13 @@ export default function EnglishToolsPage() {
     <div className="container mx-auto py-6">
       <Card>
         <CardHeader>
-          <CardTitle>English Tools</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>English Tools</CardTitle>
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
+              <RefreshCw className="animate-spin-slow h-3 w-3" />
+              <span>{countdown}s</span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <form className="space-y-4" onSubmit={handleSubmit}>

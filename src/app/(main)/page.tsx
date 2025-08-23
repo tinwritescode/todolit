@@ -43,10 +43,12 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AuthGuard } from "../../components/auth/AuthGuard";
+import { useRouter } from "next/navigation";
 
 type Todo = RouterOutputs["todo"]["getAll"][0];
 
 function TodoPageContent() {
+  const router = useRouter();
   const [newTodoName, setNewTodoName] = useState("");
   const [newTodoDue, setNewTodoDue] = useState("today");
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
@@ -235,71 +237,87 @@ function TodoPageContent() {
               <CardDescription>Plan your next action</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Task Name</label>
-                <Input
-                  placeholder="What needs to be done?"
-                  value={newTodoName}
-                  onChange={(e) => setNewTodoName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addTodo()}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Due Date</label>
-                <Select value={newTodoDue} onValueChange={setNewTodoDue}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select deadline" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">End of Today</SelectItem>
-                    <SelectItem value="tomorrow">Tomorrow</SelectItem>
-                    <SelectItem value="week">This Week</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {projects.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Project</label>
-                  <Select
-                    value={
-                      selectedProject ? selectedProject.toString() : "none"
-                    }
-                    onValueChange={(value) =>
-                      setSelectedProject(
-                        value === "none" ? null : parseInt(value, 10),
-                      )
-                    }
+              {/* if there's no project, show a warning */}
+              {projects.length === 0 ? (
+                <div className="text-sm text-red-500">
+                  {/* better to show a button to create a project */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push("/projects")}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select project" />
-                    </SelectTrigger>
-                    {/* save last project to choose to local storage, then project can be default as last project */}
-                    <SelectContent>
-                      <SelectItem value="none">No Project</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem
-                          key={project.id}
-                          value={project.id.toString()}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`h-3 w-3 rounded-full ${project.color}`}
-                            />
-                            {project.title}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    Create Project
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Task Name</label>
+                    <Input
+                      placeholder="What needs to be done?"
+                      value={newTodoName}
+                      onChange={(e) => setNewTodoName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && addTodo()}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Due Date</label>
+                    <Select value={newTodoDue} onValueChange={setNewTodoDue}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select deadline" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="today">End of Today</SelectItem>
+                        <SelectItem value="tomorrow">Tomorrow</SelectItem>
+                        <SelectItem value="week">This Week</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {projects.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Project</label>
+                      <Select
+                        value={
+                          selectedProject ? selectedProject.toString() : "none"
+                        }
+                        onValueChange={(value) =>
+                          setSelectedProject(
+                            value === "none" ? null : parseInt(value, 10),
+                          )
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select project" />
+                        </SelectTrigger>
+                        {/* save last project to choose to local storage, then project can be default as last project */}
+                        <SelectContent>
+                          <SelectItem value="none">No Project</SelectItem>
+                          {projects.map((project) => (
+                            <SelectItem
+                              key={project.id}
+                              value={project.id.toString()}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`h-3 w-3 rounded-full ${project.color}`}
+                                />
+                                {project.title}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  <Button
+                    onClick={addTodo}
+                    disabled={!newTodoName.trim() || !selectedProject}
+                    className="w-full"
+                  >
+                    Add Task
+                  </Button>
+                </>
               )}
-              <Button
-                onClick={addTodo}
-                disabled={!newTodoName.trim() || !selectedProject}
-                className="w-full"
-              >
-                Add Task
-              </Button>
             </CardContent>
           </Card>
         </div>

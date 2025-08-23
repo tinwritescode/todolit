@@ -32,6 +32,7 @@
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@t3-oss/env-nextjs": "^0.12.0",
     "@tanstack/react-query": "^5.69.0",
@@ -40,6 +41,7 @@
     "@trpc/server": "^11.0.0",
     "@upstash/qstash": "^2.8.1",
     "@upstash/redis": "^1.35.1",
+    "binance-api-node": "^0.12.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -50,8 +52,11 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
+    "siwe": "^3.0.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^3.3.1",
+    "valtio": "^2.1.5",
+    "wagmi": "^2.16.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
