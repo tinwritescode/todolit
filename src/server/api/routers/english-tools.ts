@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { executeItem } from "@/app/api/worker/process-sentences/executeItem";
 import { env } from "../../../env";
-import { qstash } from "../../../lib/qstash";
+import { qstash } from "../../qstash";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const englishToolsRouter = createTRPCRouter({

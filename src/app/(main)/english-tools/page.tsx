@@ -59,7 +59,7 @@ export default function EnglishToolsPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto max-w-2xl px-4 py-4">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

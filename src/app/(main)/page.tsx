@@ -1,436 +1,272 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import type React from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { api } from "@/trpc/react";
-import { type RouterOutputs } from "@/trpc/shared";
-import {
-  addDays,
-  endOfDay,
-  endOfWeek,
-  format,
-  isToday,
-  isTomorrow,
-} from "date-fns";
-import {
-  AlertCircle,
-  Award,
-  CheckSquare,
-  Clock,
-  Plus,
-  Target,
   Trash2,
-  TrendingUp,
-  Eye,
-  EyeOff,
+  Plus,
+  Edit3,
+  FileEdit,
+  Calendar,
+  Repeat,
+  Check,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { AuthGuard } from "../../components/auth/AuthGuard";
-import { useRouter } from "next/navigation";
 
-type Todo = RouterOutputs["todo"]["getAll"][0];
+import { useTodos } from "@/hooks/use-todos";
+import { useContextMenu } from "@/hooks/use-context-menu";
+import { useLongPress } from "@/hooks/use-long-press";
+import { useEditTodo } from "@/hooks/use-edit-todo";
+import { EditTodoDialog } from "@/components/edit-todo-dialog";
+import { HydrationWrapper } from "@/components/hydration-wrapper";
 
-function TodoPageContent() {
-  const router = useRouter();
-  const [newTodoName, setNewTodoName] = useState("");
-  const [newTodoDue, setNewTodoDue] = useState("today");
-  const [selectedProject, setSelectedProject] = useState<number | null>(null);
-  const [showCompleted, setShowCompleted] = useState(false);
+export default function TodoApp() {
+  const [inputValue, setInputValue] = useState("");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<any>(null);
 
-  const utils = api.useUtils();
-  const { data: todos = [] } = api.todo.getAll.useQuery();
-  const { data: projects = [] } = api.project.getAll.useQuery();
+  const {
+    todos,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    updateTodo,
+    updateTodoDetails,
+    resetDailyTodos,
+    completedCount,
+    totalCount,
+  } = useTodos();
+  const { contextMenu, showContextMenu, hideContextMenu, handleRightClick } =
+    useContextMenu();
+  const {
+    editingId,
+    editValue,
+    setEditValue,
+    startEdit,
+    saveEdit,
+    handleEditKeyPress,
+  } = useEditTodo();
 
-  // Load last selected project from localStorage
-  useEffect(() => {
-    const lastProject = localStorage.getItem("last-selected-project");
-    if (
-      lastProject &&
-      projects.some((p) => p.id === parseInt(lastProject, 10))
-    ) {
-      setSelectedProject(parseInt(lastProject, 10));
-    }
-  }, [projects]);
-
-  // Save selected project to localStorage when it changes
-  useEffect(() => {
-    if (selectedProject) {
-      localStorage.setItem("last-selected-project", selectedProject.toString());
-    }
-  }, [selectedProject]);
-
-  const { mutate: createTodo } = api.todo.create.useMutation({
-    onSuccess: () => {
-      void utils.todo.getAll.invalidate();
-    },
-  });
-
-  const { mutate: toggleTodo } = api.todo.toggle.useMutation({
-    onSuccess: () => {
-      void utils.todo.getAll.invalidate();
-    },
-  });
-
-  const { mutate: deleteTodoMutation } = api.todo.delete.useMutation({
-    onSuccess: () => {
-      void utils.todo.getAll.invalidate();
-    },
-  });
-
-  const addTodo = () => {
-    if (!newTodoName.trim() || !selectedProject) return;
-
-    createTodo({
-      title: newTodoName.trim(),
-      projectId: selectedProject,
-      dueDate: getDueDateFromOption(newTodoDue),
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useLongPress<number>((x, y, todoId) => {
+      if (todoId !== undefined) {
+        showContextMenu(x, y, todoId);
+      }
     });
 
-    setNewTodoName("");
-    setNewTodoDue("today");
-    // Keep the selected project, don't reset it
+  useEffect(() => {
+    resetDailyTodos();
+
+    const interval = setInterval(() => {
+      resetDailyTodos();
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [resetDailyTodos]);
+
+  const handleAddTodo = () => {
+    addTodo(inputValue);
+    setInputValue("");
   };
 
-  const handleToggleTodo = (id: number, completed: boolean) => {
-    toggleTodo({ id, completed });
-  };
-
-  const handleDeleteTodo = (id: number) => {
-    deleteTodoMutation(id);
-  };
-
-  const getDueDateFromOption = (option: string): Date => {
-    const now = new Date();
-    switch (option) {
-      case "today":
-        return endOfDay(now);
-      case "tomorrow":
-        return endOfDay(addDays(now, 1));
-      case "week":
-        return endOfWeek(now, { weekStartsOn: 1 });
-      default:
-        return endOfDay(now);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAddTodo();
     }
   };
 
-  const getActiveTodos = () => todos.filter((todo) => !todo.completed);
-  const isOverdue = (todo: Todo) =>
-    !todo.completed && todo.dueDate && new Date() > todo.dueDate;
-
-  const getDueDateLabel = (dueDate: Date | null) => {
-    if (!dueDate) return "No due date";
-    if (isToday(dueDate)) return "Today";
-    if (isTomorrow(dueDate)) return "Tomorrow";
-    return format(dueDate, "MMM d");
+  const handleTodoTouchStart = (e: React.TouchEvent, todoId: number) => {
+    const touch = e.touches[0];
+    handleTouchStart(e, todoId);
   };
 
-  const stats = {
-    total: todos.length,
-    completed: todos.filter((t) => t.completed).length,
-    overdue: todos.filter(
-      (t) => !t.completed && t.dueDate && new Date() > t.dueDate,
-    ).length,
-    today: todos.filter((t) => !t.completed && t.dueDate && isToday(t.dueDate))
-      .length,
-    completionRate:
-      todos.length > 0
-        ? Math.round(
-            (todos.filter((t) => t.completed).length / todos.length) * 100,
-          )
-        : 0,
+  const handleOpenEditDialog = (todoId: number) => {
+    const todo = todos.find((t) => t.id === todoId);
+    if (todo) {
+      setSelectedTodo(todo);
+      setEditDialogOpen(true);
+      hideContextMenu();
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <Target className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-muted-foreground text-xs">All time</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <Award className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.completed}
-            </div>
-            <p className="text-muted-foreground text-xs">
-              {stats.completionRate}% completion rate
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Due Today</CardTitle>
-            <Clock className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {stats.today}
-            </div>
-            <p className="text-muted-foreground text-xs">Focus for today</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            <AlertCircle className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.overdue}
-            </div>
-            <p className="text-muted-foreground text-xs">Need attention</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Progress</CardTitle>
-            <TrendingUp className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.completionRate}%</div>
-            <Progress value={stats.completionRate} className="mt-2" />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Add New Task */}
-        <div className="lg:col-span-1">
+    <HydrationWrapper>
+      <div className="bg-background min-h-screen p-4" onClick={hideContextMenu}>
+        <div className="mx-auto max-w-md">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
-                Add New Task
+              <CardTitle className="text-center text-2xl font-bold">
+                Simple To-Do List
               </CardTitle>
-              <CardDescription>Plan your next action</CardDescription>
+              {totalCount > 0 && (
+                <p className="text-muted-foreground text-center text-sm">
+                  {completedCount} of {totalCount} completed
+                </p>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* if there's no project, show a warning */}
-              {projects.length === 0 ? (
-                <div className="text-sm text-red-500">
-                  {/* better to show a button to create a project */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push("/projects")}
-                  >
-                    Create Project
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Task Name</label>
-                    <Input
-                      placeholder="What needs to be done?"
-                      value={newTodoName}
-                      onChange={(e) => setNewTodoName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addTodo()}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Due Date</label>
-                    <Select value={newTodoDue} onValueChange={setNewTodoDue}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select deadline" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="today">End of Today</SelectItem>
-                        <SelectItem value="tomorrow">Tomorrow</SelectItem>
-                        <SelectItem value="week">This Week</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {projects.length > 0 && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Project</label>
-                      <Select
-                        value={
-                          selectedProject ? selectedProject.toString() : "none"
-                        }
-                        onValueChange={(value) =>
-                          setSelectedProject(
-                            value === "none" ? null : parseInt(value, 10),
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select project" />
-                        </SelectTrigger>
-                        {/* save last project to choose to local storage, then project can be default as last project */}
-                        <SelectContent>
-                          <SelectItem value="none">No Project</SelectItem>
-                          {projects.map((project) => (
-                            <SelectItem
-                              key={project.id}
-                              value={project.id.toString()}
-                            >
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className={`h-3 w-3 rounded-full ${project.color}`}
-                                />
-                                {project.title}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                  <Button
-                    onClick={addTodo}
-                    disabled={!newTodoName.trim() || !selectedProject}
-                    className="w-full"
-                  >
-                    Add Task
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Active Tasks */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Active Tasks</CardTitle>
-                  <CardDescription>
-                    {getActiveTodos().length} tasks remaining
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowCompleted(!showCompleted)}
-                  className="hover:bg-gray-100"
-                  title={showCompleted ? "Hide Completed" : "Show Completed"}
-                >
-                  {showCompleted ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+              {/* Add new todo */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add a new task..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1"
+                />
+                <Button onClick={handleAddTodo} size="icon">
+                  <Plus className="h-4 w-4" />
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              {getActiveTodos().length === 0 && !showCompleted ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <CheckSquare className="mb-4 h-12 w-12 text-gray-300" />
-                  <h3 className="mb-2 text-lg font-medium text-gray-900">
-                    All caught up!
-                  </h3>
-                  <p className="text-gray-500">
-                    No active tasks. Great job staying organized!
+
+              {/* Todo list */}
+              <div className="space-y-2">
+                {todos.length === 0 ? (
+                  <p className="text-muted-foreground py-8 text-center">
+                    No tasks yet. Add one above!
                   </p>
-                </div>
-              ) : (
-                <div className="max-h-96 space-y-3 overflow-y-auto">
-                  {(showCompleted ? todos : getActiveTodos()).map((todo) => (
+                ) : (
+                  todos.map((todo) => (
                     <div
                       key={todo.id}
-                      className={`flex items-center gap-3 rounded-lg border p-4 transition-colors ${
-                        isOverdue(todo)
-                          ? "border-red-200 bg-red-50"
-                          : "border-gray-200 bg-white hover:bg-gray-50"
-                      }`}
+                      className="hover:bg-accent/50 flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+                      onContextMenu={(e) => handleRightClick(e, todo.id)}
+                      onTouchStart={(e) => handleTodoTouchStart(e, todo.id)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                     >
                       <Checkbox
                         checked={todo.completed}
-                        onCheckedChange={(checked) =>
-                          handleToggleTodo(todo.id, checked as boolean)
-                        }
-                        className="mt-0.5"
+                        onCheckedChange={() => {
+                          toggleTodo(todo.id);
+                        }}
                       />
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className={`truncate font-medium text-gray-900 ${todo.completed ? "text-gray-500 line-through" : ""}`}
-                        >
-                          {todo.title}
-                        </p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <Badge
-                            variant={
-                              isOverdue(todo) ? "destructive" : "secondary"
+                      <div className="flex-1">
+                        {editingId === todo.id ? (
+                          <Input
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) =>
+                              handleEditKeyPress(e, todo.id, updateTodo)
                             }
-                            className="text-xs"
-                          >
-                            {getDueDateLabel(todo.dueDate)}
-                          </Badge>
-                          {todo.project && (
-                            <Badge variant="outline" className="text-xs">
-                              <div
-                                className={`mr-1 h-2 w-2 rounded-full ${todo.project.color}`}
-                              />
-                              {todo.project.title}
-                            </Badge>
-                          )}
-                          {isOverdue(todo) && (
-                            <span className="text-xs font-medium text-red-600">
-                              Overdue
+                            onBlur={() => saveEdit(todo.id, updateTodo)}
+                            className="w-full"
+                            autoFocus
+                          />
+                        ) : (
+                          <div>
+                            <span
+                              className={`block ${todo.completed ? "text-muted-foreground line-through" : "text-foreground"}`}
+                            >
+                              {todo.text}
                             </span>
-                          )}
-                        </div>
+                            {todo.description && (
+                              <p className="text-muted-foreground mt-1 text-xs">
+                                {todo.description}
+                              </p>
+                            )}
+                            <div className="mt-1 flex items-center gap-2">
+                              {todo.deadline && (
+                                <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(todo.deadline).toLocaleDateString()}
+                                </span>
+                              )}
+                              {todo.repeatDaily && (
+                                <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                                  <Repeat className="h-3 w-3" />
+                                  Daily
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteTodo(todo.id)}
-                        className="shrink-0 text-gray-400 hover:text-red-500"
+                        onClick={() => {
+                          deleteTodo(todo.id);
+                        }}
+                        className="text-destructive hover:text-destructive h-8 w-8"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
-      </div>
-    </div>
-  );
-}
 
-export default function TodoPage() {
-  return (
-    <AuthGuard>
-      <TodoPageContent />
-    </AuthGuard>
+        {contextMenu && (
+          <div
+            className="bg-background fixed z-50 rounded-lg border py-1 shadow-lg"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
+          >
+            <button
+              className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+              onClick={() => {
+                const todo = todos.find((t) => t.id === contextMenu.todoId);
+                if (todo) {
+                  startEdit(todo.id, todo.text);
+                  hideContextMenu();
+                }
+              }}
+            >
+              <Edit3 className="h-4 w-4" />
+              Rename
+            </button>
+            <button
+              className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+              onClick={() => handleOpenEditDialog(contextMenu.todoId)}
+            >
+              <FileEdit className="h-4 w-4" />
+              Edit
+            </button>
+            <button
+              className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+              onClick={() => {
+                toggleTodo(contextMenu.todoId);
+                hideContextMenu();
+              }}
+            >
+              {todos.find((t) => t.id === contextMenu.todoId)?.completed ? (
+                <div className="border-muted-foreground h-4 w-4 rounded border-2" />
+              ) : (
+                <Check className="h-4 w-4 text-green-500" />
+              )}
+              {todos.find((t) => t.id === contextMenu.todoId)?.completed
+                ? "Mark as incomplete"
+                : "Mark as complete"}
+            </button>
+            <button
+              className="hover:bg-accent text-destructive flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+              onClick={() => {
+                deleteTodo(contextMenu.todoId);
+                hideContextMenu();
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </button>
+          </div>
+        )}
+
+        <EditTodoDialog
+          todo={selectedTodo}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={updateTodoDetails}
+        />
+      </div>
+    </HydrationWrapper>
   );
 }

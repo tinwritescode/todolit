@@ -55,20 +55,15 @@ model Session {
 }
 
 model User {
-    id              String           @id @default(cuid())
-    name            String?
-    email           String?          @unique
-    emailVerified   DateTime?
-    image           String?
-    accounts        Account[]
-    sessions        Session[]
-    posts           Post[]
-    projects        Project[]
-    WeeklyOverview  WeeklyOverview[]
-    EnglishTools    EnglishTools[]
-    tokens          Token[]
-    promptTemplates PromptTemplate[]
-    prompts         Prompt[]
+    id            String         @id @default(cuid())
+    name          String?
+    email         String?        @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
+    posts         Post[]
+    EnglishTools  EnglishTools[]
 }
 
 model VerificationToken {
@@ -79,60 +74,7 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-model Todo {
-    id               Int             @id @default(autoincrement())
-    title            String
-    completed        Boolean         @default(false)
-    createdAt        DateTime        @default(now())
-    updatedAt        DateTime        @updatedAt
-    dueDate          DateTime?
-    completedAt      DateTime?
-    project          Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-    projectId        Int?
-    WeeklyOverview   WeeklyOverview? @relation(fields: [weeklyOverviewId], references: [id])
-    weeklyOverviewId Int?
-
-    @@index([title])
-    @@index([projectId])
-}
-
-model Project {
-    id          Int      @id @default(autoincrement())
-    title       String
-    description String?
-    color       String   @default("bg-blue-500")
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    todos       Todo[]
-    user        User     @relation(fields: [userId], references: [id])
-    userId      String
-
-    @@index([userId])
-}
-
-model WeeklyOverview {
-    id         Int      @id @default(autoincrement())
-    week       Int
-    year       Int
-    weekStreak Int      @default(0)
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
-    user       User     @relation(fields: [userId], references: [id])
-    userId     String
-    todos      Todo[]
-
-    @@unique([week, year])
-    @@index([userId])
-}
-
 enum EnglishToolsStatus {
-    INITIAL
-    PENDING
-    COMPLETE
-    ERROR
-}
-
-enum PromptStatus {
     INITIAL
     PENDING
     COMPLETE
@@ -157,79 +99,4 @@ model EnglishTools {
     status          EnglishToolsStatus @default(INITIAL)
 
     @@index([authorId])
-}
-
-model Token {
-    id               Int      @id @default(autoincrement())
-    address          String   @unique
-    name             String
-    symbol           String
-    chainId          Int
-    network          String?
-    deployTxHash     String
-    initializeTxHash String?
-    deployerAddress  String
-    totalSupply      String?
-    ownerPercent     Int?
-    airdropPercent   Int?
-    salePercent      Int?
-    description      String?
-    imageUrl         String?
-    createdAt        DateTime @default(now())
-    updatedAt        DateTime @updatedAt
-
-    deployedBy   User   @relation(fields: [deployedById], references: [id])
-    deployedById String
-
-    @@index([deployedById])
-    @@index([chainId])
-}
-
-model PromptTemplate {
-    id        Int      @id @default(autoincrement())
-    name      String
-    content   String
-    variables Json?    @default("{}")
-    isPublic  Boolean  @default(false)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    user      User     @relation(fields: [userId], references: [id])
-    userId    String
-    Prompt    Prompt[]
-
-    @@index([userId])
-}
-
-model Prompt {
-    id               Int             @id @default(autoincrement())
-    name             String?
-    content          String
-    status           PromptStatus    @default(INITIAL)
-    errorMessage     String?
-    result           String?
-    createdAt        DateTime        @default(now())
-    updatedAt        DateTime        @updatedAt
-    user             User            @relation(fields: [userId], references: [id])
-    userId           String
-    promptTemplate   PromptTemplate? @relation(fields: [promptTemplateId], references: [id])
-    promptTemplateId Int?
-    subPrompts       SubPrompt[]
-
-    @@index([userId])
-    @@index([promptTemplateId])
-}
-
-model SubPrompt {
-    id           Int          @id @default(autoincrement())
-    name         String
-    content      String
-    status       PromptStatus @default(INITIAL)
-    errorMessage String?
-    result       String?
-    createdAt    DateTime     @default(now())
-    updatedAt    DateTime     @updatedAt
-    Prompt       Prompt?      @relation(fields: [promptId], references: [id])
-    promptId     Int?
-
-    @@index([promptId])
 }
