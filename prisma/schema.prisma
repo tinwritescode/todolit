@@ -125,7 +125,14 @@ model BackupFile {
     version  String? // e.g., "v1.0", "backup-2024-01"
     category String? // e.g., "settings", "data", "full-backup"
 
+    // Auto-sync specific fields
+    syncMetadata Json? // Store sync-specific metadata
+    deviceId     String? // Track which device created the backup
+    syncVersion  Int     @default(1) // Incremental sync version
+    isAutoSync   Boolean @default(false) // Distinguish auto-sync backups
+
     @@index([userId])
     @@index([createdAt])
     @@index([category])
+    @@index([isAutoSync])
 }
