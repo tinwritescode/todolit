@@ -496,60 +496,68 @@ export default function SettingsPage() {
                   {backupFiles.map((backup) => (
                     <div
                       key={backup.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
+                      className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <HardDrive className="text-muted-foreground h-4 w-4" />
-                          <div>
-                            <p className="font-medium">{backup.name}</p>
-                            <p className="text-muted-foreground text-sm">
+                        <div className="flex items-start gap-3">
+                          <HardDrive className="text-muted-foreground mt-0.5 h-4 w-4 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-base leading-tight font-medium">
+                              {backup.name}
+                            </p>
+                            <p className="text-muted-foreground mt-1 text-sm">
                               {backup.fileName} •{" "}
                               {(backup.fileSize / 1024).toFixed(1)} KB
                             </p>
                             {backup.description && (
-                              <p className="text-muted-foreground text-sm">
+                              <p className="text-muted-foreground mt-1 text-sm">
                                 {backup.description}
                               </p>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-muted-foreground flex items-center gap-1 text-sm">
-                          <Clock className="h-3 w-3" />
-                          {new Date(backup.createdAt).toLocaleDateString()}
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            {new Date(backup.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(backup.fileUrl, "_blank")}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRestoreClick(backup)}
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                "Are you sure you want to delete this backup?",
-                              )
-                            ) {
-                              deleteBackupMutation.mutate({ id: backup.id });
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              window.open(backup.fileUrl, "_blank")
                             }
-                          }}
-                          disabled={deleteBackupMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRestoreClick(backup)}
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  "Are you sure you want to delete this backup?",
+                                )
+                              ) {
+                                deleteBackupMutation.mutate({ id: backup.id });
+                              }
+                            }}
+                            disabled={deleteBackupMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}

@@ -202,34 +202,39 @@ export default function TodoApp() {
 
   return (
     <HydrationWrapper>
-      <div className="bg-background min-h-screen p-4" onClick={hideContextMenu}>
+      <div
+        className="bg-background min-h-screen p-2 sm:p-4"
+        onClick={hideContextMenu}
+      >
         <div className="mx-auto max-w-2xl">
-          <Card>
-            <CardHeader>
-              <div className="mb-2 flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold">
+          <Card className="gap-0 border-0 shadow-none sm:border sm:shadow-sm">
+            <CardHeader className="sm:pb-6">
+              <div className="flex flex-col gap-3 sm:mb-2 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-lg font-bold sm:text-2xl">
                   Simple To-Do List
                 </CardTitle>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="text-muted-foreground text-xs sm:text-sm">
                       Normal
                     </span>
                     <button
                       onClick={() => {
                         setCompleteMode(!completeMode);
                       }}
-                      className={`focus:ring-ring relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                      className={`focus:ring-ring relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none sm:h-6 sm:w-11 ${
                         completeMode ? "bg-primary" : "bg-muted"
                       }`}
                     >
                       <span
-                        className={`bg-background inline-block h-4 w-4 transform rounded-full transition-transform ${
-                          completeMode ? "translate-x-6" : "translate-x-1"
+                        className={`bg-background inline-block h-3 w-3 transform rounded-full transition-transform sm:h-4 sm:w-4 ${
+                          completeMode
+                            ? "translate-x-5 sm:translate-x-6"
+                            : "translate-x-0.5 sm:translate-x-1"
                         }`}
                       />
                     </button>
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-muted-foreground text-xs sm:text-sm">
                       Complete
                     </span>
                     <span className="text-muted-foreground/60 text-xs">
@@ -240,9 +245,9 @@ export default function TodoApp() {
                     variant="ghost"
                     size="sm"
                     onClick={() => (window.location.href = "/settings")}
-                    className="flex items-center gap-2"
+                    className="flex h-8 items-center justify-center gap-1.5 px-2 text-xs sm:h-auto sm:gap-2 sm:px-3 sm:text-sm"
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                     Settings
                   </Button>
                 </div>
@@ -258,7 +263,7 @@ export default function TodoApp() {
                 </p>
               )}
             </CardHeader>
-            <CardContent className="space-y-6 p-6">
+            <CardContent className="space-y-4 p-4 sm:space-y-6 sm:p-6">
               {/* Add new todo */}
               <div className="flex gap-2">
                 <Input
@@ -266,32 +271,37 @@ export default function TodoApp() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="flex-1"
+                  className="flex-1 text-sm sm:text-base"
                 />
                 <Button
                   onClick={isListening ? stopRecording : handleSpeechToText}
                   size="icon"
                   variant={isListening ? "destructive" : "outline"}
                   disabled={transcribeMutation.isPending}
+                  className="h-9 w-9 sm:h-10 sm:w-10"
                 >
-                  <Mic className="h-4 w-4" />
+                  <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
-                <Button onClick={handleAddTodo} size="icon">
-                  <Plus className="h-4 w-4" />
+                <Button
+                  onClick={handleAddTodo}
+                  size="icon"
+                  className="h-9 w-9 sm:h-10 sm:w-10"
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </div>
 
               {/* Todo list */}
               <div className="space-y-2">
                 {todos.length === 0 ? (
-                  <p className="text-muted-foreground py-8 text-center">
+                  <p className="text-muted-foreground py-6 text-center text-sm sm:py-8 sm:text-base">
                     No tasks yet. Add one above!
                   </p>
                 ) : (
                   todos.map((todo) => (
                     <div
                       key={todo.id}
-                      className={`hover:bg-accent/50 flex items-center gap-3 rounded-lg border p-3 transition-colors ${
+                      className={`hover:bg-accent/50 flex items-start gap-2 rounded-lg border p-2.5 transition-colors sm:items-center sm:gap-3 sm:p-3 ${
                         completeMode ? "cursor-pointer" : ""
                       }`}
                       onClick={() => handleTodoClick(todo.id)}
@@ -307,9 +317,9 @@ export default function TodoApp() {
                             toggleTodo(todo.id);
                           }
                         }}
-                        className={completeMode ? "pointer-events-none" : ""}
+                        className={`mt-0.5 ${completeMode ? "pointer-events-none" : ""}`}
                       />
-                      <div className="flex-1">
+                      <div className="min-w-0 flex-1">
                         {editingId === todo.id ? (
                           <Input
                             value={editValue}
@@ -318,13 +328,13 @@ export default function TodoApp() {
                               handleEditKeyPress(e, todo.id, updateTodo)
                             }
                             onBlur={() => saveEdit(todo.id, updateTodo)}
-                            className="w-full"
+                            className="w-full text-sm sm:text-base"
                             autoFocus
                           />
                         ) : (
                           <div>
                             <span
-                              className={`block ${todo.completed ? "text-muted-foreground line-through" : "text-foreground"}`}
+                              className={`block text-sm break-words sm:text-base ${todo.completed ? "text-muted-foreground line-through" : "text-foreground"}`}
                             >
                               {todo.text}
                             </span>
@@ -333,7 +343,7 @@ export default function TodoApp() {
                                 {todo.description}
                               </p>
                             )}
-                            <div className="mt-1 flex items-center gap-2">
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
                               {todo.deadline && (
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                   <Calendar className="h-3 w-3" />
@@ -356,9 +366,9 @@ export default function TodoApp() {
                         onClick={() => {
                           deleteTodo(todo.id);
                         }}
-                        className="text-destructive hover:text-destructive h-8 w-8"
+                        className="text-destructive hover:text-destructive h-7 w-7 flex-shrink-0 sm:h-8 sm:w-8"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   ))
