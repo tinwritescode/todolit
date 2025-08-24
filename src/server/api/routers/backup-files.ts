@@ -33,13 +33,36 @@ export const backupFilesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const backupFile = await ctx.db.backupFile.create({
-        data: {
-          ...input,
-          userId: ctx.session.user.id,
-        },
-      });
-      return backupFile;
+      try {
+        // First verify the user exists in the database
+        const user = await ctx.db.user.findUnique({
+          where: { id: ctx.session.user.id },
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not found in database",
+          });
+        }
+
+        const backupFile = await ctx.db.backupFile.create({
+          data: {
+            ...input,
+            userId: ctx.session.user.id,
+          },
+        });
+        return backupFile;
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        console.error("Error creating backup file:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create backup file",
+        });
+      }
     }),
 
   // Delete a backup file

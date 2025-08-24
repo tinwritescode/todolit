@@ -47,6 +47,18 @@ export const syncSimpleRouter = createTRPCRouter({
           isAutoSync: true,
         };
 
+        // First verify the user exists in the database
+        const user = await ctx.db.user.findUnique({
+          where: { id: ctx.session.user.id },
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not found in database",
+          });
+        }
+
         const backupFile = await ctx.db.backupFile.create({
           data: {
             ...backupData,
