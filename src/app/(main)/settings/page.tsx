@@ -58,7 +58,16 @@ const ImportDataSchema = z.object({
 });
 
 export default function SettingsPage() {
-  const { todos, completeMode, setCompleteMode } = useTodoStore();
+  const {
+    todos,
+    completeMode,
+    setCompleteMode,
+    autoSyncEnabled,
+    setAutoSync,
+    lastSyncTimestamp,
+    deviceId,
+    generateDeviceId,
+  } = useTodoStore();
   const [importData, setImportData] = useState("");
   const [importStatus, setImportStatus] = useState<{
     type: "success" | "error" | "warning" | null;
@@ -347,6 +356,49 @@ export default function SettingsPage() {
                   <span className="text-muted-foreground text-sm">
                     Complete
                   </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Auto-Sync Setting */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Cloud className="h-5 w-5" />
+                Auto-Sync
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-muted-foreground text-sm">
+                    Automatically sync your todos across devices
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Last sync:{" "}
+                    {lastSyncTimestamp
+                      ? new Date(lastSyncTimestamp).toLocaleString()
+                      : "Never"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">Off</span>
+                  <button
+                    onClick={() => {
+                      setAutoSync(!autoSyncEnabled);
+                    }}
+                    className={`focus:ring-ring relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                      autoSyncEnabled ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span
+                      className={`bg-background inline-block h-4 w-4 transform rounded-full transition-transform ${
+                        autoSyncEnabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-muted-foreground text-sm">On</span>
                 </div>
               </div>
             </CardContent>

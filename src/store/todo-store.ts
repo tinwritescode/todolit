@@ -15,7 +15,15 @@ interface Todo {
 interface TodoStore {
   todos: Todo[];
   completeMode: boolean;
+  autoSyncEnabled: boolean;
+  lastSyncTimestamp: string | null;
+  deviceId: string;
+  syncStatus: "idle" | "syncing" | "conflict" | "error";
   setCompleteMode: (mode: boolean) => void;
+  setAutoSync: (enabled: boolean) => void;
+  setSyncStatus: (status: "idle" | "syncing" | "conflict" | "error") => void;
+  setLastSyncTimestamp: (timestamp: string) => void;
+  generateDeviceId: () => void;
   addTodo: (text: string) => void;
   toggleTodo: (id: number) => void;
   deleteTodo: (id: number) => void;
@@ -36,7 +44,23 @@ export const useTodoStore = create<TodoStore>()(
     (set, get) => ({
       todos: [],
       completeMode: false,
+      autoSyncEnabled: false,
+      lastSyncTimestamp: null,
+      deviceId: "",
+      syncStatus: "idle" as const,
       setCompleteMode: (mode: boolean) => set({ completeMode: mode }),
+      setAutoSync: (enabled: boolean) => set({ autoSyncEnabled: enabled }),
+      setSyncStatus: (status: "idle" | "syncing" | "conflict" | "error") =>
+        set({ syncStatus: status }),
+      setLastSyncTimestamp: (timestamp: string) =>
+        set({ lastSyncTimestamp: timestamp }),
+      generateDeviceId: () => {
+        const deviceId =
+          localStorage.getItem("deviceId") ??
+          `device-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem("deviceId", deviceId);
+        set({ deviceId });
+      },
       addTodo: (text: string) => {
         if (text.trim() !== "") {
           set((state) => ({

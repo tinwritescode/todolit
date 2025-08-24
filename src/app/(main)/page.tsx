@@ -21,10 +21,12 @@ import {
 
 import { EditTodoDialog } from "@/components/edit-todo-dialog";
 import { HydrationWrapper } from "@/components/hydration-wrapper";
+import { SyncIndicator } from "@/components/sync-indicator";
 import { useContextMenu } from "@/hooks/use-context-menu";
 import { useEditTodo } from "@/hooks/use-edit-todo";
 import { useLongPress } from "@/hooks/use-long-press";
 import { useTodos } from "@/hooks/use-todos";
+import { useAutoSync } from "@/hooks/use-auto-sync";
 import { useTodoStore } from "@/store/todo-store";
 import { api } from "@/trpc/react";
 
@@ -54,6 +56,7 @@ export default function TodoApp() {
   const { completeMode, setCompleteMode } = useTodoStore();
   const { contextMenu, showContextMenu, hideContextMenu, handleRightClick } =
     useContextMenu();
+  const { triggerAutoSync } = useAutoSync();
   const {
     editingId,
     editValue,
@@ -241,6 +244,7 @@ export default function TodoApp() {
                       (M)
                     </span>
                   </div>
+                  <SyncIndicator />
                   <Button
                     variant="ghost"
                     size="sm"

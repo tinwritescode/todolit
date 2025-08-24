@@ -2,6 +2,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { englishToolsRouter } from "./routers/english-tools";
 import { backupFilesRouter } from "./routers/backup-files";
 import { speechToTextRouter } from "./routers/speech-to-text";
+import { syncSimpleRouter } from "./routers/sync-simple";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   englishTools: englishToolsRouter,
   backupFiles: backupFilesRouter,
   speechToText: speechToTextRouter,
+  sync: syncSimpleRouter,
 });
 
 // export type definition of API
