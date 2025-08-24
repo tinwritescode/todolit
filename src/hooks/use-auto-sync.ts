@@ -82,7 +82,7 @@ export const useAutoSync = () => {
         clearTimeout(syncTimeoutRef.current);
       }
     };
-  }, [todos, completeMode, autoSyncEnabled, deviceId, triggerAutoSync]);
+  }, [autoSyncEnabled, deviceId, triggerAutoSync]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize last sync reference
   useEffect(() => {

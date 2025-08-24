@@ -65,8 +65,6 @@ export default function SettingsPage() {
     autoSyncEnabled,
     setAutoSync,
     lastSyncTimestamp,
-    deviceId,
-    generateDeviceId,
   } = useTodoStore();
   const [importData, setImportData] = useState("");
   const [importStatus, setImportStatus] = useState<{

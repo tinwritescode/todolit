@@ -14,10 +14,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, title, navigation }: MainLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
   const drawerRef = useRef<HTMLDivElement>(null);
-  const startXRef = useRef<number>(0);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -119,11 +116,7 @@ export function MainLayout({ children, title, navigation }: MainLayoutProps) {
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           style={{
-            transform: isDragging
-              ? `translateX(calc(-100% + ${dragOffset}px))`
-              : isMobileMenuOpen
-                ? "translateX(0)"
-                : "translateX(-100%)",
+            transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-100%)",
           }}
           role="dialog"
           aria-modal="true"

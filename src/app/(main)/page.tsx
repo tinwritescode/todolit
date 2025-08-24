@@ -56,7 +56,8 @@ export default function TodoApp() {
   const { completeMode, setCompleteMode } = useTodoStore();
   const { contextMenu, showContextMenu, hideContextMenu, handleRightClick } =
     useContextMenu();
-  const { triggerAutoSync } = useAutoSync();
+  // Auto-sync is handled automatically by the hook
+  useAutoSync();
   const {
     editingId,
     editValue,
